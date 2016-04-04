@@ -98,24 +98,17 @@ SERIALIZER_JSON = (_json_dump, _json_load)
 SERIALIZER_MARSHAL = (marshal.dump, marshal.load)
 
 
-def disksorted(iterable, key=None, reverse=False, chunksize=sys.maxint,
-               serializer=SERIALIZER_PICKLE):
-    """
-    Sorting function for collections not fitting into memory
-    NOTE: Uses temporary files
-    NOTE: chunk_reader might do buffering
-    """
-    if chunksize < 1:
-        raise ValueError("chunksize to be positive integer")
+def diskiterator(iterable, fp=None, serializer=SERIALIZER_PICKLE):
+    """Cache iterator to disk"""
     dump, load = serializer
-    def _chunk_writer(chunk, fp=None):
+    def chunk_writer(chunk, fp=None):
         fp = fp or tempfile.TemporaryFile()
         for subchunk in chunks(chunk, 128):
             dump(list(subchunk), fp)
         dump(list(), fp)
         fp.seek(0)
         return fp
-    def _chunk_reader(fp):
+    def chunk_reader(fp):
         try:
             while True:
                 sublist = load(fp)
@@ -128,6 +121,18 @@ def disksorted(iterable, key=None, reverse=False, chunksize=sys.maxint,
                 fp.close()
             except Exception:
                 pass
+    return chunk_reader(chunk_writer(iterable, fp=fp))
+
+
+def disksorted(iterable, key=None, reverse=False, chunksize=sys.maxint,
+               serializer=SERIALIZER_PICKLE):
+    """
+    Sorting function for collections not fitting into memory
+    NOTE: Uses temporary files
+    NOTE: chunk_reader might do buffering
+    """
+    if chunksize < 1:
+        raise ValueError("chunksize to be positive integer")
     single = True
     pieces = []
     chunk = []
@@ -136,9 +141,9 @@ def disksorted(iterable, key=None, reverse=False, chunksize=sys.maxint,
         if len(chunk) == chunksize:
             single = False
         if not single:
-            pieces.append(_chunk_writer(chunk))
+            pieces.append(diskiterator(chunk))
     if not single:
-        chunk = merge([_chunk_reader(fp) for fp in pieces], key, reverse)
+        chunk = merge(pieces, key, reverse)
     for item in chunk:
         yield item
 
