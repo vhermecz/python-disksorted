@@ -46,8 +46,9 @@ class TestPythonDisksorted(unittest.TestCase):
 
     def test_cornercases(self):
         self.assertEqual(list(disksorted([])), [])
-        with self.assertRaises(ValueError):
-            _ = list(disksorted([], chunksize=0))
+        def ldisksorted(*args, **kwargs):
+            return list(disksorted(*args, **kwargs))
+        self.assertRaises(ValueError, ldisksorted, [], chunksize=0)
 
     if not IS_PY3:
         def test_empty_values(self):
