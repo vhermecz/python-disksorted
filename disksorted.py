@@ -124,7 +124,7 @@ def diskiterator(iterable, fp=None, serializer=SERIALIZER_PICKLE):
     return chunk_reader(chunk_writer(iterable, fp=fp))
 
 
-def disksorted(iterable, key=None, reverse=False, chunksize=sys.maxint,
+def disksorted(iterable, key=None, reverse=False, chunksize=sys.maxsize,
                serializer=SERIALIZER_PICKLE):
     """
     Sorting function for collections not fitting into memory
