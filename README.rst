@@ -21,9 +21,6 @@ Sortin' gigz
 TODO
 --------
 * Documentation
-* Commit
-* OpenSource
-* Add to TRAVIS
 * Fix
 * Add to PYPI
 * WIN
