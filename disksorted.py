@@ -71,14 +71,14 @@ def merge(chunks, key=None, reverse=False):
     key = key or (lambda x: x)
     if reverse:
         key = key_to_reverse_order(key)
-    heap = [((None, idx), MERGE_SENTINEL) for idx in range(len(chunks))]
+    heap = [(((0, ), idx), MERGE_SENTINEL) for idx in range(len(chunks))]
     heapq.heapify(heap)
     while heap:
         (_, stream_idx), record = heapq.heappop(heap)
         if record != MERGE_SENTINEL:
             yield record
         try:
-            record = chunks[stream_idx].next()
+            record = next(chunks[stream_idx])
             heapq.heappush(heap, (((1, key(record)), stream_idx), record))
         except StopIteration:
             pass
