@@ -16,6 +16,10 @@ way is slower.
 
 NOTE: This part of the module still requires some development, to achieve better performance.
 
+The following table provides some timing info on sorting. Actual values depend on disk access and
+CPU speed, so it may be substantially different on your own system. If you want, you can rerun
+the performance test, it is in the *generate_timing.py* module in the github repo.
+
 .. include:: timing.rst
 
 Time of operations relative to in-memory sort. Conf:
