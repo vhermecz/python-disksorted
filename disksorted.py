@@ -98,9 +98,9 @@ def _json_load(fp):
     return json.loads(next(fp))
 
 
-SERIALIZER_PICKLE = (functools.partial(pickle.dump, protocol=-1), pickle.load)
-SERIALIZER_JSON = (_json_dump, _json_load)
-SERIALIZER_MARSHAL = (marshal.dump, marshal.load)
+SERIALIZER_PICKLE = (functools.partial(pickle.dump, protocol=-1), pickle.load, "w+b")
+SERIALIZER_JSON = (_json_dump, _json_load, "w+t")
+SERIALIZER_MARSHAL = (marshal.dump, marshal.load, "w+b")
 
 
 def diskiterator(iterable, fp=None, serializer=SERIALIZER_PICKLE):
@@ -112,9 +112,9 @@ def diskiterator(iterable, fp=None, serializer=SERIALIZER_PICKLE):
     :type fp: file|NoneType
     :type serializer: (function, function)
     '''
-    dump, load = serializer
+    dump, load, filemode = serializer
     def chunk_writer(chunk, fp=None):
-        fp = fp or tempfile.TemporaryFile()
+        fp = fp or tempfile.TemporaryFile(mode=filemode)
         for subchunk in chunks(chunk, 128):
             dump(list(subchunk), fp)
         dump(list(), fp)
