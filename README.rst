@@ -15,27 +15,27 @@ Python Disksorted
 
 Sortin' gigz
 
-* Free software: ISC license
-* Documentation: https://python-disksorted.readthedocs.org.
+Most data processing operations can be performed sequentially, keeping only a subset of the
+whole dataset in memory. When this is not the case, sorting the dataset can make such a sequential
+operation possible. However, sorting a large set of data, while it is not hard, goes beyond the
+complexity that is convenient to be delt with, during solving a problem.
 
-TODO
---------
-* Documentation
-* Fix
-* Add to PYPI
-* WIN
+Most of the times, you can import data into python with the right sorting, and you should certainly
+do that. But sometimes, this is not possible. For those cases, now we have this library.
 
-Features
---------
-
-* TODO
+Requirements
+------------
+* Make sure, the contents of your iterator are serializable
+* pip install python-disksorted
+* Change **sorted** to **disksorted** in your code.
+* Profit
 
 Notes
 --------
 
-The cmp parameter of sorted is not supported, as Python 3.0 removed that. Use the functools.cmp_to_key method if needed.
-
-Compared to the built in sorted, disksorted method returns a generator rather than a list. This is a lazy approach, which allows for 
+Compared to the built-in sorted, disksorted method returns a generator rather than a list. 
+This lazy approach allows for writing code which will only be executed when the data in the iterator
+is actually used. Other execution paths wont suffer from the long running sorting operation...
 
 
 Credits
