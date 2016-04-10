@@ -15,19 +15,20 @@ Python Disksorted
 
 Sortin' gigz
 
+Like the built-in sorted, just without the memory limitations.
+
 Most data processing operations can be performed sequentially, keeping only a subset of the
 whole dataset in memory. When this is not the case, sorting the dataset can make such a sequential
 operation possible. However, sorting a large set of data, while it is not hard, goes beyond the
-complexity that is convenient to be delt with, during solving a problem.
-
-Most of the times, you can import data into python with the right sorting, and you should certainly
-do that. But sometimes, this is not possible. For those cases, now we have this library.
+complexity that is convenient to be delt with, during solving a problem. Most of the times, you can
+import data into python with the right sorting, and you should certainly do that. But sometimes,
+this is not possible. For those cases, now you have this library.
 
 Requirements
 ------------
 * Make sure, the contents of your iterator are serializable
 * pip install python-disksorted
-* Change **sorted** to **disksorted** in your code.
+* Change **sorted** to **disksorted** in your code
 * Profit
 
 Notes

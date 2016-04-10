@@ -17,3 +17,8 @@ way is slower.
 NOTE: This part of the module still requires some development, to achieve better performance.
 
 .. include:: timing.rst
+
+Time of operations relative to in-memory sort. Conf:
+**simple,10k**: A list of 10k random integers.
+**pload:32,10k**: A 10k list of namedtuples of random-integers plus a 32byte string payload.
+**pload:0-2k,1m**: A 1 million item list, string payload is 0-2048 byte. 

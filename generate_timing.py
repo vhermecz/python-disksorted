@@ -5,9 +5,10 @@ import random
 import collections
 from disksorted import disksorted
 import gc
-from tabulate import tabulate
 import contextlib
 import timeit
+import string
+import tabulate
 
 DataWithPayload = collections.namedtuple("DataWithPayload", "datum payload")
 
@@ -21,7 +22,7 @@ def some_payload(size=32, var=0):
     """Generate a random string of length @size"""
     if var:
         size = random.randint(size-var, size+var)
-    return "".join([chr(random.randint(64, 92)) for _ in range(size)]) or None
+    return ''.join(random.choice(string.ascii_uppercase) for _ in range(size))
 
 def some_payloaded_data(length=1000000, size=32, var=0):
     """Generate random array with named tuples, containing random string as payload"""
@@ -40,6 +41,12 @@ def pprint_timing(value):
     for postfix, limit in RANGES:
         if abs(value) >= limit:
             return "{:.2f}{}".format(float(value)/limit, postfix).replace(".00", "")
+
+def pprint_size(value):
+    """Pretty-print size (with rounding)"""
+    for postfix, limit in [("G", 1e9), ("M", 1e6), ("K", 1e3), ("", 1)]:
+        if value >= limit:
+            return "{}{}".format(int(value/limit), postfix)
 
 @contextlib.contextmanager
 def timer():
@@ -80,12 +87,16 @@ CHUNKSIZE = [None, 1000, 10000, 100000, 1000000]
 
 def main():
     """Generate timing table"""
-    timetable = [["conf"]]
+    h1 = ["conf"]
+    h2 = [""]
     for chunksize in CHUNKSIZE:
         if chunksize is None:
-            timetable[0].append("sorted")
+            h1.append("sorted")
+            h2.append("")
         else:
-            timetable[0].append("disksorted(chunksize={0})".format(chunksize))
+            h1.append("disksorted")
+            h2.append("chunksize={0}".format(pprint_size(chunksize)))
+    timetable = [h1, h2]
     for dataconf in DATACONF:
         with timer():
             data = list(dataconf["fn"](**dataconf["args"]))
@@ -110,8 +121,8 @@ def main():
                 timing = pprint_timing(timing)
             times.append(timing)
         timetable.append([dataconf["name"]] + times)
-    timetable = tabulate(timetable, tablefmt='rst')
-    with open("docs/timing.rst", "w") as fp:
+    timetable = tabulate.tabulate(timetable, tablefmt='rst')
+    with open("docs/timing.rst", "wt") as fp:
         fp.write(timetable)
     print timetable
 
