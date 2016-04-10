@@ -20,7 +20,8 @@ import heapq
 __author__ = 'Vajk Hermecz'
 __email__ = 'vhermecz@gmail.com'
 __version__ = '0.9'
-__all__ = ['disksorted', 'merge', 'SERIALIZER_PICKLE', 'SERIALIZER_JSON', 'SERIALIZER_MARSHAL']
+__all__ = ['disksorted', 'diskiterator', 'merge', 'SERIALIZER_PICKLE', 'SERIALIZER_JSON',
+           'SERIALIZER_MARSHAL']
 
 
 def chunks(iterable, size):
@@ -63,11 +64,15 @@ MERGE_SENTINEL = object()
 
 
 def merge(chunks, key=None, reverse=False):
-    """
+    '''
     Merge iterators together
-    TODO: consider using heapq.merge
-    """
-    # TODO: test reverse
+    :param chunks: to be merged.
+    :param key: specifies a function of one argument that is used to extract a comparison key from
+        each list element.
+    :param reverse: is a boolean value. If set to True, then the list elements are sorted as if
+        each comparison were reversed.
+    '''
+    # NOTE: consider using heapq.merge
     key = key or (lambda x: x)
     if reverse:
         key = key_to_reverse_order(key)
@@ -87,7 +92,7 @@ def merge(chunks, key=None, reverse=False):
 def _json_dump(payload, fp):
     json.dump(payload, fp)
     fp.write("\n")
-    
+
 
 def _json_load(fp):
     return json.loads(next(fp))
@@ -99,7 +104,14 @@ SERIALIZER_MARSHAL = (marshal.dump, marshal.load)
 
 
 def diskiterator(iterable, fp=None, serializer=SERIALIZER_PICKLE):
-    """Cache iterator to disk"""
+    '''
+    Cache iterator to disk
+    :param iterable: to be cached
+    :param fp: is the file-object to be used. (tempfile to be used if omitted.)
+    :param serializer: defines the methods to be used for transfering data between disk and memory.
+    :type fp: file|NoneType
+    :type serializer: (function, function)
+    '''
     dump, load = serializer
     def chunk_writer(chunk, fp=None):
         fp = fp or tempfile.TemporaryFile()
@@ -126,11 +138,21 @@ def diskiterator(iterable, fp=None, serializer=SERIALIZER_PICKLE):
 
 def disksorted(iterable, key=None, reverse=False, chunksize=sys.maxsize,
                serializer=SERIALIZER_PICKLE):
-    """
+    '''
     Sorting function for collections not fitting into memory
     NOTE: Uses temporary files
-    NOTE: chunk_reader might do buffering
-    """
+    :param iterable: of items to be sorted
+    :param key: specifies a function of one argument that is used to extract a comparison key from
+        each list element.
+    :param reverse: is a boolean value. If set to True, then the list elements are sorted as if
+        each comparison were reversed.
+    :param chunksize: specifies the largest number of items to be held in memory at once.
+    :param serializer: defines the methods to be used for transfering data between disk and memory.
+    :type key: function|NoneType
+    :type reverse: bool
+    :type chunksize: int|NoneType
+    :type serializer: (function, function)
+    '''
     if chunksize < 1:
         raise ValueError("chunksize to be positive integer")
     single = True
@@ -141,7 +163,7 @@ def disksorted(iterable, key=None, reverse=False, chunksize=sys.maxsize,
         if len(chunk) == chunksize:
             single = False
         if not single:
-            pieces.append(diskiterator(chunk))
+            pieces.append(diskiterator(chunk, serializer=serializer))
     if not single:
         chunk = merge(pieces, key, reverse)
     for item in chunk:
