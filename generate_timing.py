@@ -9,6 +9,7 @@ import contextlib
 import timeit
 import string
 import tabulate
+import errno
 
 DataWithPayload = collections.namedtuple("DataWithPayload", "datum payload")
 
@@ -75,6 +76,8 @@ KEYFN_D = lambda x: x.datum
 DATACONF = [
     dict(fn=some_simple_data, args=dict(length=10000), keyfn=None, name="simple,10k"),
     dict(fn=some_simple_data, args=dict(length=1000000), keyfn=None, name="simple,1m"),
+    dict(fn=some_simple_data, args=dict(length=10000000), keyfn=None, name="simple,10m"),
+    dict(fn=some_simple_data, args=dict(length=100000000), keyfn=None, name="simple,100m"),
     dict(fn=some_payloaded_data, args=dict(length=10000, size=0, var=0), keyfn=KEYFN_D, name="pload:0,10k"),
     dict(fn=some_payloaded_data, args=dict(length=1000000, size=0, var=0), keyfn=KEYFN_D, name="pload:0,1m"),
     dict(fn=some_payloaded_data, args=dict(length=10000, size=32, var=0), keyfn=KEYFN_D, name="pload:32,10k"),
@@ -98,23 +101,29 @@ def main():
             h2.append("chunksize={0}".format(pprint_size(chunksize)))
     timetable = [h1, h2]
     for dataconf in DATACONF:
+        print "Generating {}({}):".format(dataconf["fn"].__name__, dataconf["args"]),
         with timer():
             data = list(dataconf["fn"](**dataconf["args"]))
         print timer.read()
         times = []
         basetime = 0
+        timing = "err"
         for chunksize in CHUNKSIZE:
             if chunksize is None or chunksize < dataconf["args"]["length"]:
-                for _ in range(3):
-                    _ = gc.collect()
-                    with timer():
-                        sort_fn = mysorted if chunksize is None else disksorted
-                        _ = next(iter(sort_fn(data, key=dataconf["keyfn"], chunksize=chunksize)))
-                timing = timer.read()
-                if not times:
-                    basetime = timing
-                else:
-                    timing = "{0}%".format(int(100 * timing / basetime))
+                try:
+                    for _ in range(9):
+                        _ = gc.collect()
+                        with timer():
+                            sort_fn = mysorted if chunksize is None else disksorted
+                            _ = next(iter(sort_fn(data, key=dataconf["keyfn"], chunksize=chunksize)))
+                    timing = timer.read()
+                    if not times:
+                        basetime = timing
+                    else:
+                        timing = "{0}%".format(int(100 * timing / basetime))
+                except OSError, e:
+                    if e.errno == errno.EMFILE:
+                        timing = "toomany"
             else:
                 timing = "na"
             if not isinstance(timing, basestring):

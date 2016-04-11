@@ -7,6 +7,14 @@ To use Python Disksorted in a project::
     from disksorted import disksorted
     data = disksorted(data, key=lambda x: -x[2].cost)
 
+Too many open files
+-------------------
+
+OSError: [Errno 24] Too many open files: '/tmp/tmpsV7ID4'
+
+TODO: Write about this case. ulimit is your friend in linux, also there's resource.getrlimit(resource.RLIMIT_NOFILE)
+
+
 Timing
 ------
 
@@ -22,7 +30,8 @@ the performance test, it is in the *generate_timing.py* module in the github rep
 
 .. include:: timing.rst
 
-Time of operations relative to in-memory sort. Conf:
+Time of operations relative to in-memory sort. Legend:
 **simple,10k**: A list of 10k random integers.
 **pload:32,10k**: A 10k list of namedtuples of random-integers plus a 32byte string payload.
 **pload:0-2k,1m**: A 1 million item list, string payload is 0-2048 byte. 
+**toomany**: Too many open files exception, number of open files exceeded system limit.
